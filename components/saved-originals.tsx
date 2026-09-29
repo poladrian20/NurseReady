@@ -1,0 +1,7 @@
+'use client';
+import {useState} from 'react';
+export function SavedOriginals(){
+ const [files,setFiles]=useState<{id:string;name:string}[]|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ async function load(){setBusy(true);setError('');try{const r=await fetch('/api/files',{cache:'no-store'});if(!r.ok)throw Error('Could not load originals. Open your saved study space, then retry.');const result=await r.json() as {files:{id:string;name:string}[]};setFiles(result.files);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ return <section className="card" style={{marginBottom:24}}><h2>Recover uploaded originals</h2><p>If a file uploaded successfully but its note did not save, you can still download the original here. Open the recovery code used during that upload first. Download and re-upload it through Add your notes to rebuild the review text.</p><button className="btn secondary" onClick={load} disabled={busy}>{busy?'Loading originals…':files?'Refresh saved originals':'Show saved originals'}</button>{error&&<p role="alert" className="error-text">{error}</p>}{files&&(!files.length?<p>No uploaded originals in this study space. Pasted text does not have an original file.</p>:<ul>{files.map(f=><li key={f.id}><a className="text-button" style={{minHeight:44,overflowWrap:'anywhere'}} href={'/api/files?id='+encodeURIComponent(f.id)} download>{f.name} — Download original</a></li>)}</ul>)}</section>;
+}
